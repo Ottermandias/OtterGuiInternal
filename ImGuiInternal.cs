@@ -167,6 +167,9 @@ public static unsafe class ImGuiInternal
         Vector2* textSizeIfKnown, ImVec2 align, ImRect* clipRect, bool scanText)
     {
         var (visibleEnd, _, _) = scanText ? StringHelpers.SplitStringWithNull(text) : (text.Length, 0, 0);
+        if (visibleEnd == 0)
+            return;
+
         var bytes = visibleEnd * 2 > StringHelpers.MaxStackAlloc ? new byte[visibleEnd * 2] : stackalloc byte[visibleEnd * 2];
         fixed (byte* start = bytes)
         {

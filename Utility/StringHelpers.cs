@@ -17,7 +17,10 @@ public static class StringHelpers
     public static unsafe void AddText(ImDrawListPtr drawList, Vector2 position, uint color, ReadOnlySpan<char> text, bool checkSharp)
     {
         var endIdx = checkSharp ? SplitStringWithoutNull(text).VisibleEnd : text.Length;
-        var bytes  = endIdx * 2 > MaxStackAlloc ? new byte[endIdx * 2] : stackalloc byte[endIdx * 2];
+        if (endIdx == 0)
+            return;
+
+        var bytes = endIdx * 2 > MaxStackAlloc ? new byte[endIdx * 2] : stackalloc byte[endIdx * 2];
         fixed (byte* start = bytes)
         {
             var numBytes = Encoding.UTF8.GetBytes(text[..endIdx], bytes);
@@ -62,10 +65,9 @@ public static class StringHelpers
         bool withNullChecking = true)
     {
         if (hideTextAfterHash)
-        {
-            var (visibleEnd, _, _) = SplitString(text, withNullChecking);
-            text                   = text[..visibleEnd];
-        }
+            text = text[..SplitString(text, withNullChecking).VisibleEnd];
+        if (text.Length == 0)
+            return Vector2.Zero;
 
         var bytes    = text.Length * 2 > MaxStackAlloc ? new byte[text.Length * 2] : stackalloc byte[text.Length * 2];
         var numBytes = Encoding.UTF8.GetBytes(text, bytes);
@@ -104,11 +106,12 @@ public static class StringHelpers
         var biggerSize      = Math.Max(visibleEnd, labelEnd - labelStart) * 2;
         var bytes           = biggerSize > MaxStackAlloc ? new byte[biggerSize] : stackalloc byte[biggerSize];
         var numBytesTotal   = Encoding.UTF8.GetBytes(text[..labelEnd], bytes);
-        var numBytesVisible = labelStart == 0 ? numBytesTotal : Encoding.UTF8.GetByteCount(text[..visibleEnd]);
+        var numBytesVisible = visibleEnd == text.Length ? numBytesTotal : Encoding.UTF8.GetByteCount(text[..visibleEnd]);
         fixed (byte* start = bytes)
         {
             var size = Vector2.Zero;
-            ImGuiNative.igCalcTextSize(&size, start, start + numBytesVisible, 0, wrapWidth);
+            if (numBytesVisible > 0)
+                ImGuiNative.igCalcTextSize(&size, start, start + numBytesVisible, 0, wrapWidth);
             var id = (ImGuiId)ImGuiNative.igGetID_StrStr(labelStart == 0 ? start : start + numBytesVisible, start + numBytesTotal);
             return (visibleEnd, size, id);
         }
@@ -175,25 +178,32 @@ public static class StringHelpers
     {
         var idx        = 0;
         var labelStart = 0;
-        var visibleEnd = text.Length;
         while (idx >= 0)
         {
-            var newIdx = text[idx..].IndexOfAny("\0#");
+            var newIdx = text[idx..].IndexOfAny("#\0");
             if (newIdx < 0)
                 break;
 
             idx += newIdx;
+            // We have not encountered ## before since that leads to a return.
             if (text[idx] == '\0')
-                return (visibleEnd, labelStart, idx);
+                return (idx, 0, idx);
 
+            // Check for ##
             if (idx < text.Length - 1 && text[idx + 1] == '#')
             {
+                // Check for ###
                 if (idx < text.Length - 2 && text[idx + 2] == '#')
                     labelStart = idx;
-                visibleEnd = idx;
+
+                // check End.
+                newIdx = text[idx..].IndexOf('\0');
+                return (idx, labelStart, newIdx >= 0 ? newIdx : text.Length);
             }
+
+            ++idx;
         }
 
-        return (visibleEnd, labelStart, text.Length);
+        return (text.Length, labelStart, text.Length);
     }
 }
