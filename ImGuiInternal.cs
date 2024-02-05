@@ -1,4 +1,5 @@
 using ImGuiNET;
+using OtterGui.OtterGuiInternal.Enums;
 using OtterGuiInternal.Enums;
 using OtterGuiInternal.Structs;
 using OtterGuiInternal.Utility;
@@ -45,6 +46,19 @@ public static unsafe class ImGuiInternal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ItemAdd(ImRect boundingBox, ImGuiId id, ImRect navBoundingBox, ItemFlags flags = 0)
         => ImGuiNativeInterop.ItemAdd(boundingBox, id, &navBoundingBox, flags);
+
+    /// <summary> Control the key usage of an item. </summary>
+    /// <param name="key"> The key to control. </param>
+    /// <param name="flags"> The input flags. </param>
+    /// <remarks> This is not yet implemented in our version of ImGui. </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ItemSetKeyOwner(ImGuiKey key, ImGuiInputFlags flags)
+        => throw new NotImplementedException();
+
+    /// <summary> Control the mouse wheel usage of an item. </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ItemSetUsingMouseWheel()
+        => ImGuiNativeInterop.SetItemUsingMouseWheel();
 
     /// <summary> Make an area behave like a button. </summary>
     /// <param name="boundingBox"> The areas bounding box. </param>

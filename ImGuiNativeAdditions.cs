@@ -1,4 +1,5 @@
 using ImGuiNET;
+using OtterGui.OtterGuiInternal.Enums;
 using OtterGuiInternal.Enums;
 using OtterGuiInternal.Structs;
 
@@ -48,4 +49,11 @@ public static unsafe partial class ImGuiNativeInterop
     [LibraryImport(CLibraryName, EntryPoint = "igRenderTextClippedEx")]
     public static partial void RenderTextClippedEx(ImDrawList* drawList, ImVec2 posMin, ImVec2 posMax, byte* text, byte* textDisplayEnd,
         ImVec2* textSizeIfKnown, ImVec2 align, ImRect* clipRect);
+
+
+    [LibraryImport(CLibraryName, EntryPoint = "igSetItemKeyOwner")]
+    public static partial void SetItemKeyOwner(ImGuiKey key, ImGuiInputFlags flags);
+
+    [LibraryImport(CLibraryName, EntryPoint = "igSetItemUsingMouseWheel")]
+    public static partial void SetItemUsingMouseWheel();
 }
