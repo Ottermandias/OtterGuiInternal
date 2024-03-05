@@ -20,7 +20,7 @@ public static class StringHelpers
         if (endIdx == 0)
             return;
 
-        var bytes = endIdx * 2 > MaxStackAlloc ? new byte[endIdx * 2] : stackalloc byte[endIdx * 2];
+        var bytes = endIdx * 4 > MaxStackAlloc ? new byte[endIdx * 4] : stackalloc byte[endIdx * 4];
         fixed (byte* start = bytes)
         {
             var numBytes = Encoding.UTF8.GetBytes(text[..endIdx], bytes);
@@ -46,7 +46,7 @@ public static class StringHelpers
     public static unsafe (int VisibleEnd, ImGuiId Id) ComputeId(ReadOnlySpan<char> text, bool withNullChecking = true)
     {
         var (visibleEnd, labelStart, labelEnd) = SplitString(text, withNullChecking);
-        var bytes    = visibleEnd * 2 > MaxStackAlloc ? new byte[visibleEnd * 2] : stackalloc byte[visibleEnd * 2];
+        var bytes    = visibleEnd * 4 > MaxStackAlloc ? new byte[visibleEnd * 4] : stackalloc byte[visibleEnd * 4];
         var numBytes = Encoding.UTF8.GetBytes(text[labelStart..labelEnd], bytes);
         fixed (byte* start = bytes)
         {
@@ -69,7 +69,7 @@ public static class StringHelpers
         if (text.Length == 0)
             return Vector2.Zero;
 
-        var bytes    = text.Length * 2 > MaxStackAlloc ? new byte[text.Length * 2] : stackalloc byte[text.Length * 2];
+        var bytes    = text.Length * 4 > MaxStackAlloc ? new byte[text.Length * 4] : stackalloc byte[text.Length * 4];
         var numBytes = Encoding.UTF8.GetBytes(text, bytes);
         fixed (byte* start = bytes)
         {
@@ -103,7 +103,7 @@ public static class StringHelpers
         bool withNullChecking = true)
     {
         var (visibleEnd, labelStart, labelEnd) = SplitString(text, withNullChecking);
-        var biggerSize      = Math.Max(visibleEnd, labelEnd - labelStart) * 2;
+        var biggerSize      = Math.Max(visibleEnd, labelEnd - labelStart) * 4;
         var bytes           = biggerSize > MaxStackAlloc ? new byte[biggerSize] : stackalloc byte[biggerSize];
         var numBytesTotal   = Encoding.UTF8.GetBytes(text[..labelEnd], bytes);
         var numBytesVisible = visibleEnd == text.Length ? numBytesTotal : Encoding.UTF8.GetByteCount(text[..visibleEnd]);
