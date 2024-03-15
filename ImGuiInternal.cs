@@ -177,6 +177,7 @@ public static unsafe class ImGuiInternal
         => RenderTextClippedExInternal(drawList.NativePtr, box.Min, box.Max, text, &knownTextSize, align, &clipRect, scanText);
 
 
+    [SkipLocalsInit]
     private static void RenderTextClippedExInternal(ImDrawList* drawList, ImVec2 posMin, ImVec2 posMax, ReadOnlySpan<char> text,
         Vector2* textSizeIfKnown, ImVec2 align, ImRect* clipRect, bool scanText)
     {
