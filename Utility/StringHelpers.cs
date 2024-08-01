@@ -59,8 +59,12 @@ public static class StringHelpers
     public static unsafe (int VisibleEnd, ImGuiId Id) ComputeId(ReadOnlySpan<char> text, bool withNullChecking = true)
     {
         var (visibleEnd, labelStart, labelEnd) = SplitString(text, withNullChecking);
-        var bytes    = visibleEnd * 4 > MaxStackAlloc ? new byte[visibleEnd * 4] : stackalloc byte[visibleEnd * 4];
-        var numBytes = Encoding.UTF8.GetBytes(text[labelStart..labelEnd], bytes);
+        var bytes = visibleEnd * 4 > MaxStackAlloc ? new byte[visibleEnd * 4] : stackalloc byte[visibleEnd * 4];
+        text = text[labelStart..labelEnd];
+        if (text.IsEmpty)
+            return (visibleEnd, (ImGuiId)ImGuiNative.igGetID_StrStr(null, null));
+
+        var numBytes = Encoding.UTF8.GetBytes(text, bytes);
         fixed (byte* start = bytes)
         {
             var id = ImGuiNative.igGetID_StrStr(start, start + numBytes);
@@ -71,6 +75,10 @@ public static class StringHelpers
     /// <inheritdoc cref="ComputeId(ReadOnlySpan{char}, bool)"/>
     public static unsafe (int VisibleEnd, ImGuiId Id) ComputeId(ReadOnlySpan<byte> text, bool withNullChecking = true)
     {
+        byte tmp = 0;
+        if (text.IsEmpty)
+            return (0, (ImGuiId)ImGuiNative.igGetID_StrStr(&tmp, &tmp));
+
         var (visibleEnd, labelStart, labelEnd) = SplitString(text, withNullChecking);
         fixed (byte* start = text)
         {
@@ -162,6 +170,10 @@ public static class StringHelpers
     public static unsafe (int VisibleEnd, Vector2 Size, ImGuiId Id) ComputeSizeAndId(ReadOnlySpan<byte> text, float wrapWidth = 0,
         bool withNullChecking = true)
     {
+        byte tmp = 0;
+        if (text.IsEmpty)
+            return (0, Vector2.Zero, (ImGuiId)ImGuiNative.igGetID_StrStr(&tmp, &tmp));
+
         var (visibleEnd, labelStart, labelEnd) = SplitString(text, withNullChecking);
         fixed (byte* start = text)
         {
