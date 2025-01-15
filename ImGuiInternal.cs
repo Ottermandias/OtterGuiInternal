@@ -176,6 +176,18 @@ public static unsafe class ImGuiInternal
         ImRect clipRect, bool scanText)
         => RenderTextClippedExInternal(drawList.NativePtr, box.Min, box.Max, text, &knownTextSize, align, &clipRect, scanText);
 
+    /// <summary> Rotate a vector. </summary>
+    /// <param name="vec"> The vector to rotate. </param>
+    /// <param name="cos"> The cosine of the rotation angle. </param>
+    /// <param name="sin"> The sine of the rotation angle. </param>
+    /// <returns> The rotated vector. </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector2 Rotate(Vector2 vec, float cos, float sin)
+    {
+        ImGuiNativeInterop.ImRotate(out var ret, vec, cos, sin);
+        return ret;
+    }
+
 
     [SkipLocalsInit]
     private static void RenderTextClippedExInternal(ImDrawList* drawList, ImVec2 posMin, ImVec2 posMax, ReadOnlySpan<char> text,

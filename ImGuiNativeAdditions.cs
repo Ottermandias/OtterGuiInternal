@@ -56,4 +56,7 @@ public static unsafe partial class ImGuiNativeInterop
 
     [LibraryImport(CLibraryName, EntryPoint = "igSetItemUsingMouseWheel")]
     public static partial void SetItemUsingMouseWheel();
+
+    [LibraryImport(CLibraryName, EntryPoint = "igImRotate")]
+    public static partial void ImRotate(out ImVec2 result, ImVec2 v, float cos, float sin);
 }
