@@ -25,6 +25,9 @@ public static unsafe partial class ImGuiNativeInterop
         [MarshalAs(UnmanagedType.U1)] out bool hovered,
         [MarshalAs(UnmanagedType.U1)] out bool held, ImGuiButtonFlags flags);
 
+    [LibraryImport(CLibraryName, EntryPoint = "igSplitterBehavior")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SplitterBehavior(in ImRect bb, ImGuiId id, ImGuiAxis axis, float* size1, float* size2, float minSize1, float minSize2, float hoverExtend, float hoverVisibilityDelay, uint x);
 
     [LibraryImport(CLibraryName, EntryPoint = "igItemSize_Rect")]
     public static partial void ItemSizeRect(ImRect bb, float textBaseLineY);
