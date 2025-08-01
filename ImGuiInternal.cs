@@ -1,9 +1,8 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGui.OtterGuiInternal.Enums;
 using OtterGuiInternal.Enums;
 using OtterGuiInternal.Structs;
 using OtterGuiInternal.Utility;
-using OtterGuiInternal.Wrappers;
 
 namespace OtterGuiInternal;
 
@@ -12,21 +11,21 @@ public static unsafe class ImGuiInternal
     /// <summary> Obtain a wrapped pointer to the current window. </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ImGuiWindowPtr GetCurrentWindow()
-        => ImGuiNativeInterop.GetCurrentWindow();
+        => ImGuiP.GetCurrentWindow();
 
     /// <summary> Specify the size of the next item to add. Advances the cursor for that size. </summary>
     /// <param name="boundingBox"> The bounding box of the item. </param>
     /// <param name="textBaseLineY"> Usually FramePadding.Y, or negative to automatically compute. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ItemSize(ImRect boundingBox, float textBaseLineY = -1f)
-        => ImGuiNativeInterop.ItemSizeRect(boundingBox, textBaseLineY);
+        => ImGuiP.ItemSize(boundingBox, textBaseLineY);
 
     /// <summary> Specify the size of the next item to add. Advances the cursor for that size. </summary>
     /// <param name="size"> The size of the item. </param>
     /// <param name="textBaseLineY"> Usually FramePadding.Y, or negative to automatically compute. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ItemSize(Vector2 size, float textBaseLineY = -1f)
-        => ImGuiNativeInterop.ItemSizeVec(size, textBaseLineY);
+        => ImGuiP.ItemSize(size, textBaseLineY);
 
     /// <summary> Add an item to the item stack for clipping and interaction. </summary>
     /// <param name="boundingBox"> The bounding box of the item, for things like e.g. hover. </param>
@@ -34,8 +33,8 @@ public static unsafe class ImGuiInternal
     /// <param name="flags"> Additional flags. </param>
     /// <returns> Whether the item could be added successfully. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool ItemAdd(ImRect boundingBox, ImGuiId id, ItemFlags flags = 0)
-        => ImGuiNativeInterop.ItemAdd(boundingBox, id, null, flags);
+    public static bool ItemAdd(ImRect boundingBox, ImGuiId id, ImGuiItemFlags flags = 0)
+        => ImGuiP.ItemAdd(boundingBox, (uint)id, null, flags);
 
     /// <summary> Add an item to the item stack. </summary>
     /// <param name="boundingBox"> The bounding box of the item, for things like e.g. hover. </param>
@@ -44,8 +43,8 @@ public static unsafe class ImGuiInternal
     /// <param name="flags"> Additional flags. </param>
     /// <returns> Whether the item could be added successfully. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool ItemAdd(ImRect boundingBox, ImGuiId id, ImRect navBoundingBox, ItemFlags flags = 0)
-        => ImGuiNativeInterop.ItemAdd(boundingBox, id, &navBoundingBox, flags);
+    public static bool ItemAdd(ImRect boundingBox, ImGuiId id, ImRect navBoundingBox, ImGuiItemFlags flags = 0)
+        => ImGuiP.ItemAdd(boundingBox, (uint)id, &navBoundingBox, flags);
 
     /// <summary> Control the key usage of an item. </summary>
     /// <param name="key"> The key to control. </param>
@@ -58,7 +57,7 @@ public static unsafe class ImGuiInternal
     /// <summary> Control the mouse wheel usage of an item. </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ItemSetUsingMouseWheel()
-        => ImGuiNativeInterop.SetItemUsingMouseWheel();
+        => ImGuiP.SetItemUsingMouseWheel();
 
     /// <summary> Make an area behave like a button. </summary>
     /// <param name="boundingBox"> The areas bounding box. </param>
@@ -69,15 +68,19 @@ public static unsafe class ImGuiInternal
     /// <returns> Whether the button was clicked this frame. </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ButtonBehavior(ImRect boundingBox, ImGuiId id, out bool hovered, out bool held, ImGuiButtonFlags flags = 0)
-        => ImGuiNativeInterop.ButtonBehavior(boundingBox, id, out hovered, out held, flags);
+    {
+        hovered = false;
+        held = false;
+        return ImGuiP.ButtonBehavior(boundingBox, (uint)id, ref hovered, ref held, flags);
+    }
 
     /// <summary> Render a navigation highlight for things like drag & drop I assume. </summary>
     /// <param name="boundingBox"> The bounding box of the object. </param>
     /// <param name="id"> The unique ID of the object. </param>
     /// <param name="flags"> Misc. flags. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void RenderNavHighlight(ImRect boundingBox, ImGuiId id, NavHighlightFlags flags = 0)
-        => ImGuiNativeInterop.RenderNavHighlight(boundingBox, id, flags);
+    public static void RenderNavHighlight(ImRect boundingBox, ImGuiId id, ImGuiNavHighlightFlags flags = 0)
+        => ImGuiP.RenderNavHighlight(boundingBox, (uint)id, flags);
 
 
     /// <summary> Render a general frame. </summary>
@@ -88,7 +91,7 @@ public static unsafe class ImGuiInternal
     /// <param name="rounding"> How strongly to round the frame. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RenderFrame(Vector2 min, Vector2 max, uint fillColor, bool border = true, float rounding = 0f)
-        => ImGuiNativeInterop.RenderFrame(min, max, fillColor, border, rounding);
+        => ImGuiP.RenderFrame(min, max, fillColor, border, rounding);
 
     /// <summary> Render a general frame. </summary>
     /// <param name="rect"> The rectangle for the frame.  </param>
@@ -97,7 +100,7 @@ public static unsafe class ImGuiInternal
     /// <param name="rounding"> How strongly to round the frame. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RenderFrame(ImRect rect, uint fillColor, bool border = true, float rounding = 0f)
-        => ImGuiNativeInterop.RenderFrame(rect.Min, rect.Max, fillColor, border, rounding);
+        => ImGuiP.RenderFrame(rect.Min, rect.Max, fillColor, border, rounding);
 
     /// <summary> Calculate the effective size of something. </summary>
     /// <param name="min"> The minimum size parameter given by the user. If negative, content region + <paramref name="min"/> is used. </param>
@@ -107,7 +110,8 @@ public static unsafe class ImGuiInternal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector2 CalcItemSize(Vector2 min, float defaultWidth, float defaultHeight)
     {
-        ImGuiNativeInterop.CalcItemSize(out var result, min, defaultWidth, defaultHeight);
+        Vector2 result = default;
+        ImGuiP.CalcItemSize(ref result, min, defaultWidth, defaultHeight);
         return result;
     }
 
@@ -116,20 +120,20 @@ public static unsafe class ImGuiInternal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RenderTextClipped(ImDrawListPtr drawList, Vector2 posMin, Vector2 posMax, ReadOnlySpan<char> text, Vector2 align,
         bool scanText)
-        => RenderTextClippedExInternal(drawList.NativePtr, posMin, posMax, text, null, align, null, scanText);
+        => RenderTextClippedExInternal(drawList, posMin, posMax, text, null, align, default, scanText);
 
     /// <inheritdoc cref="RenderTextClipped(ImDrawListPtr,Vector2,Vector2,ReadOnlySpan{char},Vector2,Vector2,ImRect,bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RenderTextClipped(ImDrawListPtr drawList, Vector2 posMin, Vector2 posMax, ReadOnlySpan<char> text, Vector2 align,
         Vector2 knownTextSize, bool scanText)
-        => RenderTextClippedExInternal(drawList.NativePtr, posMin, posMax, text, &knownTextSize, align, null, scanText);
+        => RenderTextClippedExInternal(drawList, posMin, posMax, text, &knownTextSize, align, default, scanText);
 
     /// <inheritdoc cref="RenderTextClipped(ImDrawListPtr,Vector2,Vector2,ReadOnlySpan{char},Vector2,Vector2,ImRect,bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RenderTextClipped(ImDrawListPtr drawList, Vector2 posMin, Vector2 posMax, ReadOnlySpan<char> text, Vector2 align,
         ImRect clipRect,
         bool scanText)
-        => RenderTextClippedExInternal(drawList.NativePtr, posMin, posMax, text, null, align, &clipRect, scanText);
+        => RenderTextClippedExInternal(drawList, posMin, posMax, text, null, align, clipRect, scanText);
 
     /// <summary> Render text while clipping parts of it. </summary>
     /// <param name="drawList"> The draw list to render in. </param>
@@ -143,25 +147,25 @@ public static unsafe class ImGuiInternal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RenderTextClipped(ImDrawListPtr drawList, Vector2 posMin, Vector2 posMax, ReadOnlySpan<char> text, Vector2 align,
         Vector2 knownTextSize, ImRect clipRect, bool scanText)
-        => RenderTextClippedExInternal(drawList.NativePtr, posMin, posMax, text, &knownTextSize, align, &clipRect, scanText);
+        => RenderTextClippedExInternal(drawList, posMin, posMax, text, &knownTextSize, align, clipRect, scanText);
 
 
     /// <inheritdoc cref="RenderTextClipped(ImDrawListPtr,ImRect,ReadOnlySpan{char},Vector2,Vector2,ImRect,bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RenderTextClipped(ImDrawListPtr drawList, ImRect box, ReadOnlySpan<char> text, Vector2 align, bool scanText)
-        => RenderTextClippedExInternal(drawList.NativePtr, box.Min, box.Max, text, null, align, null, scanText);
+        => RenderTextClippedExInternal(drawList, box.Min, box.Max, text, null, align, default, scanText);
 
     /// <inheritdoc cref="RenderTextClipped(ImDrawListPtr,ImRect,ReadOnlySpan{char},Vector2,Vector2,ImRect,bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RenderTextClipped(ImDrawListPtr drawList, ImRect box, ReadOnlySpan<char> text, Vector2 align,
         Vector2 knownTextSize, bool scanText)
-        => RenderTextClippedExInternal(drawList.NativePtr, box.Min, box.Max, text, &knownTextSize, align, null, scanText);
+        => RenderTextClippedExInternal(drawList, box.Min, box.Max, text, &knownTextSize, align, default, scanText);
 
     /// <inheritdoc cref="RenderTextClipped(ImDrawListPtr,ImRect,ReadOnlySpan{char},Vector2,Vector2,ImRect,bool)"/>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RenderTextClipped(ImDrawListPtr drawList, ImRect box, ReadOnlySpan<char> text, Vector2 align, ImRect clipRect,
         bool scanText)
-        => RenderTextClippedExInternal(drawList.NativePtr, box.Min, box.Max, text, null, align, &clipRect, scanText);
+        => RenderTextClippedExInternal(drawList, box.Min, box.Max, text, null, align, clipRect, scanText);
 
     /// <summary> Render text while clipping parts of it. </summary>
     /// <param name="drawList"> The draw list to render in. </param>
@@ -174,7 +178,7 @@ public static unsafe class ImGuiInternal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void RenderTextClipped(ImDrawListPtr drawList, ImRect box, ReadOnlySpan<char> text, Vector2 align, Vector2 knownTextSize,
         ImRect clipRect, bool scanText)
-        => RenderTextClippedExInternal(drawList.NativePtr, box.Min, box.Max, text, &knownTextSize, align, &clipRect, scanText);
+        => RenderTextClippedExInternal(drawList, box.Min, box.Max, text, &knownTextSize, align, clipRect, scanText);
 
     /// <summary> Rotate a vector. </summary>
     /// <param name="vec"> The vector to rotate. </param>
@@ -184,14 +188,15 @@ public static unsafe class ImGuiInternal
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector2 Rotate(Vector2 vec, float cos, float sin)
     {
-        ImGuiNativeInterop.ImRotate(out var ret, vec, cos, sin);
+        Vector2 ret = default;
+        ImGuiP.ImRotate(ref ret, vec, cos, sin);
         return ret;
     }
 
 
     [SkipLocalsInit]
     private static void RenderTextClippedExInternal(ImDrawList* drawList, ImVec2 posMin, ImVec2 posMax, ReadOnlySpan<char> text,
-        Vector2* textSizeIfKnown, ImVec2 align, ImRect* clipRect, bool scanText)
+        Vector2* textSizeIfKnown, ImVec2 align, ImRect clipRect, bool scanText)
     {
         var (visibleEnd, _, _) = scanText ? StringHelpers.SplitStringWithNull(text) : (text.Length, 0, 0);
         if (visibleEnd == 0)
@@ -201,8 +206,8 @@ public static unsafe class ImGuiInternal
         fixed (byte* start = bytes)
         {
             var numBytes = Encoding.UTF8.GetBytes(text[..visibleEnd], bytes);
-            ImGuiNativeInterop.RenderTextClippedEx(drawList, posMin, posMax, start, start + numBytes, (ImVec2*)textSizeIfKnown, align,
-                clipRect);
+            ImGuiP.RenderTextClippedEx(drawList, posMin, posMax, start, start + numBytes, textSizeIfKnown, align,
+                &clipRect);
         }
     }
 }

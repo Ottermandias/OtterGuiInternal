@@ -1,4 +1,4 @@
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using OtterGuiInternal.Enums;
 
 namespace OtterGuiInternal.Utility;
@@ -24,7 +24,7 @@ public static class StringHelpers
         fixed (byte* start = bytes)
         {
             var numBytes = Encoding.UTF8.GetBytes(text[..endIdx], bytes);
-            ImGuiNative.ImDrawList_AddText_Vec2(drawList.NativePtr, position, color, start, start + numBytes);
+            drawList.AddText(position, color, start, start + numBytes);
         }
     }
 
@@ -37,7 +37,7 @@ public static class StringHelpers
 
         fixed (byte* start = text)
         {
-            ImGuiNative.ImDrawList_AddText_Vec2(drawList.NativePtr, position, color, start, start + endIdx);
+            drawList.AddText(position, color, start, start + endIdx);
         }
     }
 
@@ -62,13 +62,12 @@ public static class StringHelpers
         var bytes = visibleEnd * 4 > MaxStackAlloc ? new byte[visibleEnd * 4] : stackalloc byte[visibleEnd * 4];
         text = text[labelStart..labelEnd];
         if (text.IsEmpty)
-            return (visibleEnd, (ImGuiId)ImGuiNative.igGetID_StrStr(null, null));
+            return (visibleEnd, (ImGuiId)ImGuiP.GetID(ImGuiP.GetCurrentWindow(), (byte*)null));
 
         var numBytes = Encoding.UTF8.GetBytes(text, bytes);
         fixed (byte* start = bytes)
         {
-            var id = ImGuiNative.igGetID_StrStr(start, start + numBytes);
-            return (visibleEnd, (ImGuiId)id);
+            return (visibleEnd, (ImGuiId)ImGuiP.GetID(ImGuiP.GetCurrentWindow(), start));
         }
     }
 
@@ -77,12 +76,12 @@ public static class StringHelpers
     {
         byte tmp = 0;
         if (text.IsEmpty)
-            return (0, (ImGuiId)ImGuiNative.igGetID_StrStr(&tmp, &tmp));
+            return (0, (ImGuiId)ImGui.GetID(&tmp, &tmp));
 
         var (visibleEnd, labelStart, labelEnd) = SplitString(text, withNullChecking);
         fixed (byte* start = text)
         {
-            var id = ImGuiNative.igGetID_StrStr(start + labelStart, start + labelEnd);
+            var id = ImGui.GetID(start + labelStart, start + labelEnd);
             return (visibleEnd, (ImGuiId)id);
         }
     }
@@ -106,7 +105,7 @@ public static class StringHelpers
         fixed (byte* start = bytes)
         {
             var ret = Vector2.Zero;
-            ImGuiNative.igCalcTextSize(&ret, start, start + numBytes, 0, wrapWidth);
+            ImGui.CalcTextSize(&ret, start, start + numBytes, false, wrapWidth);
             return ret;
         }
     }
@@ -123,7 +122,7 @@ public static class StringHelpers
         fixed (byte* start = text)
         {
             var ret = Vector2.Zero;
-            ImGuiNative.igCalcTextSize(&ret, start, start + text.Length, 0, wrapWidth);
+            ImGui.CalcTextSize(&ret, start, start + text.Length, false, wrapWidth);
             return ret;
         }
     }
@@ -160,8 +159,8 @@ public static class StringHelpers
         {
             var size = Vector2.Zero;
             if (numBytesVisible > 0)
-                ImGuiNative.igCalcTextSize(&size, start, start + numBytesVisible, 0, wrapWidth);
-            var id = (ImGuiId)ImGuiNative.igGetID_StrStr(labelStart == 0 ? start : start + numBytesVisible, start + numBytesTotal);
+                ImGui.CalcTextSize(&size, start, start + numBytesVisible, false, wrapWidth);
+            var id = (ImGuiId)ImGui.GetID(labelStart == 0 ? start : start + numBytesVisible, start + numBytesTotal);
             return (visibleEnd, size, id);
         }
     }
@@ -172,15 +171,15 @@ public static class StringHelpers
     {
         byte tmp = 0;
         if (text.IsEmpty)
-            return (0, Vector2.Zero, (ImGuiId)ImGuiNative.igGetID_StrStr(&tmp, &tmp));
+            return (0, Vector2.Zero, (ImGuiId)ImGui.GetID(&tmp, &tmp));
 
         var (visibleEnd, labelStart, labelEnd) = SplitString(text, withNullChecking);
         fixed (byte* start = text)
         {
             var size = Vector2.Zero;
             if (visibleEnd > 0)
-                ImGuiNative.igCalcTextSize(&size, start, start + visibleEnd, 0, wrapWidth);
-            var id = (ImGuiId)ImGuiNative.igGetID_StrStr(start + labelStart, start + labelEnd);
+                ImGui.CalcTextSize(&size, start, start + visibleEnd, false, wrapWidth);
+            var id = (ImGuiId)ImGui.GetID(start + labelStart, start + labelEnd);
             return (visibleEnd, size, id);
         }
     }
