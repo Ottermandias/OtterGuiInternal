@@ -206,8 +206,8 @@ public static unsafe class ImGuiInternal
         fixed (byte* start = bytes)
         {
             var numBytes = Encoding.UTF8.GetBytes(text[..visibleEnd], bytes);
-            ImGuiP.RenderTextClippedEx(drawList, posMin, posMax, start, start + numBytes, textSizeIfKnown, align,
-                &clipRect);
+            ImGuiP.RenderTextClippedEx(drawList, posMin, posMax, start,  *textSizeIfKnown, align,
+                clipRect);
         }
     }
 }

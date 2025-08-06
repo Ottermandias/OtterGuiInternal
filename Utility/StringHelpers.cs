@@ -24,7 +24,7 @@ public static class StringHelpers
         fixed (byte* start = bytes)
         {
             var numBytes = Encoding.UTF8.GetBytes(text[..endIdx], bytes);
-            drawList.AddText(position, color, start, start + numBytes);
+            drawList.AddText(position, color, start);
         }
     }
 
@@ -37,7 +37,7 @@ public static class StringHelpers
 
         fixed (byte* start = text)
         {
-            drawList.AddText(position, color, start, start + endIdx);
+            drawList.AddText(position, color, start);
         }
     }
 
@@ -62,12 +62,12 @@ public static class StringHelpers
         var bytes = visibleEnd * 4 > MaxStackAlloc ? new byte[visibleEnd * 4] : stackalloc byte[visibleEnd * 4];
         text = text[labelStart..labelEnd];
         if (text.IsEmpty)
-            return (visibleEnd, (ImGuiId)ImGuiP.GetID(ImGuiP.GetCurrentWindow(), (byte*)null));
+            return (visibleEnd, (ImGuiId)ImGuiP.GetID(ImGuiP.GetCurrentWindow(), (void*)null));
 
         var numBytes = Encoding.UTF8.GetBytes(text, bytes);
         fixed (byte* start = bytes)
         {
-            return (visibleEnd, (ImGuiId)ImGuiP.GetID(ImGuiP.GetCurrentWindow(), start));
+            return (visibleEnd, (ImGuiId)ImGuiP.GetID(ImGuiP.GetCurrentWindow(), (void*)start));
         }
     }
 
@@ -76,12 +76,12 @@ public static class StringHelpers
     {
         byte tmp = 0;
         if (text.IsEmpty)
-            return (0, (ImGuiId)ImGui.GetID(&tmp, &tmp));
+            return (0, (ImGuiId)ImGui.GetID(tmp));
 
         var (visibleEnd, labelStart, labelEnd) = SplitString(text, withNullChecking);
         fixed (byte* start = text)
         {
-            var id = ImGui.GetID(start + labelStart, start + labelEnd);
+            var id = ImGui.GetID((void*)(start + labelStart));
             return (visibleEnd, (ImGuiId)id);
         }
     }
@@ -105,7 +105,7 @@ public static class StringHelpers
         fixed (byte* start = bytes)
         {
             var ret = Vector2.Zero;
-            ImGui.CalcTextSize(&ret, start, start + numBytes, false, wrapWidth);
+            ImGui.CalcTextSize( start, false, wrapWidth);
             return ret;
         }
     }
@@ -122,7 +122,7 @@ public static class StringHelpers
         fixed (byte* start = text)
         {
             var ret = Vector2.Zero;
-            ImGui.CalcTextSize(&ret, start, start + text.Length, false, wrapWidth);
+            ImGui.CalcTextSize( start, false, wrapWidth);
             return ret;
         }
     }
@@ -159,8 +159,8 @@ public static class StringHelpers
         {
             var size = Vector2.Zero;
             if (numBytesVisible > 0)
-                ImGui.CalcTextSize(&size, start, start + numBytesVisible, false, wrapWidth);
-            var id = (ImGuiId)ImGui.GetID(labelStart == 0 ? start : start + numBytesVisible, start + numBytesTotal);
+                ImGui.CalcTextSize(start,  false, wrapWidth);
+            var id = (ImGuiId)ImGui.GetID((void*) (labelStart == 0 ? start : start + numBytesVisible));
             return (visibleEnd, size, id);
         }
     }
@@ -171,15 +171,15 @@ public static class StringHelpers
     {
         byte tmp = 0;
         if (text.IsEmpty)
-            return (0, Vector2.Zero, (ImGuiId)ImGui.GetID(&tmp, &tmp));
+            return (0, Vector2.Zero, (ImGuiId)ImGui.GetID((void*) &tmp));
 
         var (visibleEnd, labelStart, labelEnd) = SplitString(text, withNullChecking);
         fixed (byte* start = text)
         {
             var size = Vector2.Zero;
             if (visibleEnd > 0)
-                ImGui.CalcTextSize(&size, start, start + visibleEnd, false, wrapWidth);
-            var id = (ImGuiId)ImGui.GetID(start + labelStart, start + labelEnd);
+                ImGui.CalcTextSize( start, false, wrapWidth);
+            var id = (ImGuiId)ImGui.GetID((void*) (start + labelStart));
             return (visibleEnd, size, id);
         }
     }
