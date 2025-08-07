@@ -20,12 +20,9 @@ public static class StringHelpers
         if (endIdx == 0)
             return;
 
-        var bytes = endIdx * 4 > MaxStackAlloc ? new byte[endIdx * 4] : stackalloc byte[endIdx * 4];
-        fixed (byte* start = bytes)
-        {
-            var numBytes = Encoding.UTF8.GetBytes(text[..endIdx], bytes);
-            drawList.AddText(position, color, start, start + numBytes);
-        }
+        var bytes    = endIdx * 4 > MaxStackAlloc ? new byte[endIdx * 4] : stackalloc byte[endIdx * 4];
+        var numBytes = Encoding.UTF8.GetBytes(text[..endIdx], bytes);
+        drawList.AddText(position, color, bytes[..numBytes]);
     }
 
     /// <inheritdoc cref="AddText(ImDrawListPtr, Vector2, uint, ReadOnlySpan{char}, bool)"/>
@@ -35,10 +32,7 @@ public static class StringHelpers
         if (endIdx == 0)
             return;
 
-        fixed (byte* start = text)
-        {
-            drawList.AddText(position, color, start, start + endIdx);
-        }
+        drawList.AddText(position, color, text[..endIdx]);
     }
 
     /// <summary> Compute the Id of a text and the end of its visible part. </summary>
@@ -62,28 +56,21 @@ public static class StringHelpers
         var bytes = visibleEnd * 4 > MaxStackAlloc ? new byte[visibleEnd * 4] : stackalloc byte[visibleEnd * 4];
         text = text[labelStart..labelEnd];
         if (text.IsEmpty)
-            return (visibleEnd, (ImGuiId)ImGuiP.GetID(ImGuiP.GetCurrentWindow(), (byte*)null));
+            return (visibleEnd, (ImGuiId)ImGuiP.GetID(ImGuiP.GetCurrentWindow(), (void*)null));
 
         var numBytes = Encoding.UTF8.GetBytes(text, bytes);
-        fixed (byte* start = bytes)
-        {
-            return (visibleEnd, (ImGuiId)ImGuiP.GetID(ImGuiP.GetCurrentWindow(), start));
-        }
+        return (visibleEnd, (ImGuiId)ImGuiP.GetID(ImGuiP.GetCurrentWindow(), bytes[..numBytes]));
     }
 
     /// <inheritdoc cref="ComputeId(ReadOnlySpan{char}, bool)"/>
     public static unsafe (int VisibleEnd, ImGuiId Id) ComputeId(ReadOnlySpan<byte> text, bool withNullChecking = true)
     {
-        byte tmp = 0;
         if (text.IsEmpty)
-            return (0, (ImGuiId)ImGui.GetID(&tmp, &tmp));
+            return (0, (ImGuiId)ImGui.GetID(""u8));
 
         var (visibleEnd, labelStart, labelEnd) = SplitString(text, withNullChecking);
-        fixed (byte* start = text)
-        {
-            var id = ImGui.GetID(start + labelStart, start + labelEnd);
-            return (visibleEnd, (ImGuiId)id);
-        }
+        var id = ImGui.GetID(text[labelStart..labelEnd]);
+        return (visibleEnd, (ImGuiId)id);
     }
 
     /// <summary> Compute the size of a text using the current font. </summary>
@@ -102,12 +89,7 @@ public static class StringHelpers
 
         var bytes    = text.Length * 4 > MaxStackAlloc ? new byte[text.Length * 4] : stackalloc byte[text.Length * 4];
         var numBytes = Encoding.UTF8.GetBytes(text, bytes);
-        fixed (byte* start = bytes)
-        {
-            var ret = Vector2.Zero;
-            ImGui.CalcTextSize(&ret, start, start + numBytes, false, wrapWidth);
-            return ret;
-        }
+        return ImGui.CalcTextSize(bytes[..numBytes], false, wrapWidth);
     }
 
     /// <inheritdoc cref="ComputeSize(ReadOnlySpan{char}, bool, float, bool)"/>
@@ -119,12 +101,7 @@ public static class StringHelpers
         if (text.Length == 0)
             return Vector2.Zero;
 
-        fixed (byte* start = text)
-        {
-            var ret = Vector2.Zero;
-            ImGui.CalcTextSize(&ret, start, start + text.Length, false, wrapWidth);
-            return ret;
-        }
+        return ImGui.CalcTextSize(text, false, wrapWidth);
     }
 
     /// <summary> Compute the size of a text using the current font and the ID of it using the current ID stack. </summary>
@@ -155,33 +132,22 @@ public static class StringHelpers
         var bytes           = biggerSize > MaxStackAlloc ? new byte[biggerSize] : stackalloc byte[biggerSize];
         var numBytesTotal   = Encoding.UTF8.GetBytes(text[..labelEnd], bytes);
         var numBytesVisible = visibleEnd == text.Length ? numBytesTotal : Encoding.UTF8.GetByteCount(text[..visibleEnd]);
-        fixed (byte* start = bytes)
-        {
-            var size = Vector2.Zero;
-            if (numBytesVisible > 0)
-                ImGui.CalcTextSize(&size, start, start + numBytesVisible, false, wrapWidth);
-            var id = (ImGuiId)ImGui.GetID(labelStart == 0 ? start : start + numBytesVisible, start + numBytesTotal);
-            return (visibleEnd, size, id);
-        }
+        var size            = numBytesVisible > 0 ? ImGui.CalcTextSize(bytes[..numBytesVisible], false, wrapWidth) : Vector2.Zero;
+        var id              = (ImGuiId)ImGui.GetID(labelStart == 0 ? bytes[..numBytesTotal] : bytes[numBytesVisible..numBytesTotal]);
+        return (visibleEnd, size, id);
     }
 
     /// <inheritdoc cref="ComputeSizeAndId(ReadOnlySpan{char}, float, bool)"/>
     public static unsafe (int VisibleEnd, Vector2 Size, ImGuiId Id) ComputeSizeAndId(ReadOnlySpan<byte> text, float wrapWidth = 0,
         bool withNullChecking = true)
     {
-        byte tmp = 0;
         if (text.IsEmpty)
-            return (0, Vector2.Zero, (ImGuiId)ImGui.GetID(&tmp, &tmp));
+            return (0, Vector2.Zero, (ImGuiId)ImGui.GetID(""u8));
 
         var (visibleEnd, labelStart, labelEnd) = SplitString(text, withNullChecking);
-        fixed (byte* start = text)
-        {
-            var size = Vector2.Zero;
-            if (visibleEnd > 0)
-                ImGui.CalcTextSize(&size, start, start + visibleEnd, false, wrapWidth);
-            var id = (ImGuiId)ImGui.GetID(start + labelStart, start + labelEnd);
-            return (visibleEnd, size, id);
-        }
+        var size = visibleEnd > 0 ? ImGui.CalcTextSize(text[..visibleEnd], false, wrapWidth) : Vector2.Zero;
+        var id   = (ImGuiId)ImGui.GetID(text[labelStart..labelEnd]);
+        return (visibleEnd, size, id);
     }
 
     /// <inheritdoc cref="SplitStringWithNull(ReadOnlySpan{char})"/>
